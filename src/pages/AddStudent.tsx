@@ -13,9 +13,12 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { studentService } from "@/lib/studentService";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AddStudent() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -35,10 +38,24 @@ export default function AddStudent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log("Form submitted:", formData);
-    // Navigate back to students list
-    navigate("/students");
+    
+    try {
+      const newStudent = studentService.addStudent(formData);
+      
+      toast({
+        title: "Student Added Successfully",
+        description: `${newStudent.firstName} ${newStudent.lastName} has been registered.`,
+      });
+      
+      // Navigate back to students list
+      navigate("/students");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save student. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
