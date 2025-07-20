@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { MoreHorizontal, CreditCard, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,17 +21,58 @@ import { Badge } from "@/components/ui/badge";
 import { studentService, Student } from "@/lib/studentService";
 import { useToast } from "@/hooks/use-toast";
 
-export function StudentTable() {
-  const [students, setStudents] = useState<Student[]>(() => studentService.getStudents());
+interface StudentTableProps {
+  searchTerm?: string;
+  filterProgram?: string;
+  filterYear?: string;
+}
+
+export function StudentTable({ searchTerm = "", filterProgram = "", filterYear = "" }: StudentTableProps) {
+  const [allStudents, setAllStudents] = useState<Student[]>(() => studentService.getStudents());
   const { toast } = useToast();
+
+  // Refresh students data when component mounts or when external changes occur
+  useEffect(() => {
+    setAllStudents(studentService.getStudents());
+  }, []);
+
+  // Filter students based on search and filter criteria
+  const filteredStudents = useMemo(() => {
+    return allStudents.filter((student) => {
+      const matchesSearch = searchTerm === "" || 
+        student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.studentId.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesProgram = filterProgram === "" || filterProgram === "all" || 
+        student.program === filterProgram;
+
+      const matchesYear = filterYear === "" || filterYear === "all" || 
+        student.year === filterYear;
+
+      return matchesSearch && matchesProgram && matchesYear;
+    });
+  }, [allStudents, searchTerm, filterProgram, filterYear]);
 
   const handleMarkAsPaid = (studentId: string) => {
     const success = studentService.markFeeAsPaid(studentId);
     if (success) {
-      setStudents(studentService.getStudents());
+      setAllStudents(studentService.getStudents());
       toast({
         title: "Payment Updated",
         description: "Student fee has been marked as paid.",
+      });
+    }
+  };
+
+  const handleDeleteStudent = (studentId: string) => {
+    const success = studentService.deleteStudent(studentId);
+    if (success) {
+      setAllStudents(studentService.getStudents());
+      toast({
+        title: "Student Deleted",
+        description: "Student record has been successfully deleted.",
       });
     }
   };
@@ -67,14 +108,17 @@ export function StudentTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {students.length === 0 ? (
+          {filteredStudents.length === 0 ? (
             <TableRow>
               <TableCell colSpan={9} className="text-center text-muted-foreground">
-                No students found. Add your first student to get started.
+                {searchTerm || filterProgram || filterYear ? 
+                  "No students match the current filters." : 
+                  "No students found. Add your first student to get started."
+                }
               </TableCell>
             </TableRow>
           ) : (
-            students.map((student) => (
+            filteredStudents.map((student) => (
               <TableRow key={student.id}>
                 <TableCell className="font-medium">
                   {student.firstName} {student.lastName}
@@ -105,7 +149,10 @@ export function StudentTable() {
                           Mark as Paid
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem 
+                        className="text-destructive"
+                        onClick={() => handleDeleteStudent(student.id)}
+                      >
                         Delete Student
                       </DropdownMenuItem>
                     </DropdownMenuContent>

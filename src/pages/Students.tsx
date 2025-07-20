@@ -88,7 +88,11 @@ export default function Students() {
           </div>
 
           {/* Table */}
-          <StudentTable />
+          <StudentTable 
+            searchTerm={searchTerm}
+            filterProgram={filterProgram}
+            filterYear={filterYear}
+          />
         </CardContent>
       </Card>
     </div>
