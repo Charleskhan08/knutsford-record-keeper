@@ -136,4 +136,4 @@ class StudentService {
   }
 }
 
-export const studentService = new StudentService();
+export const studentService: StudentService = new StudentService();
