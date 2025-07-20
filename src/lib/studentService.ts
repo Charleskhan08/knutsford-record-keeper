@@ -10,6 +10,10 @@ export interface Student {
   address: string;
   emergencyContact: string;
   notes: string;
+  feePaid: boolean;
+  feeAmount: number;
+  paymentDate?: string;
+  semester: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -25,6 +29,9 @@ export interface StudentFormData {
   address: string;
   emergencyContact: string;
   notes: string;
+  feePaid: boolean;
+  feeAmount: number;
+  semester: string;
 }
 
 class StudentService {
@@ -51,6 +58,7 @@ class StudentService {
     const newStudent: Student = {
       id: this.generateId(),
       ...formData,
+      paymentDate: formData.feePaid ? now : undefined,
       createdAt: now,
       updatedAt: now,
     };
@@ -90,6 +98,33 @@ class StudentService {
   getStudentById(id: string): Student | null {
     const students = this.getStudents();
     return students.find(student => student.id === id) || null;
+  }
+
+  markFeeAsPaid(id: string): boolean {
+    const students = this.getStudents();
+    const student = students.find(s => s.id === id);
+    
+    if (!student) return false;
+    
+    student.feePaid = true;
+    student.paymentDate = new Date().toISOString();
+    student.updatedAt = new Date().toISOString();
+    
+    this.saveStudents(students);
+    return true;
+  }
+
+  getPaymentReport(semester?: string): { paid: Student[]; unpaid: Student[]; totalAmount: number; paidAmount: number } {
+    const students = this.getStudents();
+    const filteredStudents = semester ? students.filter(s => s.semester === semester) : students;
+    
+    const paid = filteredStudents.filter(s => s.feePaid);
+    const unpaid = filteredStudents.filter(s => !s.feePaid);
+    
+    const totalAmount = filteredStudents.reduce((sum, s) => sum + s.feeAmount, 0);
+    const paidAmount = paid.reduce((sum, s) => sum + s.feeAmount, 0);
+    
+    return { paid, unpaid, totalAmount, paidAmount };
   }
 
   private saveStudents(students: Student[]): void {

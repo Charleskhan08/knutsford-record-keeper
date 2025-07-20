@@ -30,10 +30,16 @@ export default function AddStudent() {
     address: "",
     emergencyContact: "",
     notes: "",
+    feePaid: false,
+    feeAmount: 0,
+    semester: "",
   });
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ 
+      ...prev, 
+      [field]: field === "feePaid" ? value === "true" : field === "feeAmount" ? Number(value) : value 
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -201,6 +207,47 @@ export default function AddStudent() {
                   rows={3}
                   placeholder="Any additional information..."
                 />
+              </div>
+            </div>
+
+            {/* Fee Information */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="semester">Semester *</Label>
+                <Select onValueChange={(value) => handleInputChange("semester", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select semester" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2024-1">2024 - First Semester</SelectItem>
+                    <SelectItem value="2024-2">2024 - Second Semester</SelectItem>
+                    <SelectItem value="2025-1">2025 - First Semester</SelectItem>
+                    <SelectItem value="2025-2">2025 - Second Semester</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="feeAmount">Fee Amount *</Label>
+                <Input
+                  id="feeAmount"
+                  type="number"
+                  value={formData.feeAmount}
+                  onChange={(e) => handleInputChange("feeAmount", e.target.value)}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="feePaid">Payment Status</Label>
+                <Select onValueChange={(value) => handleInputChange("feePaid", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Paid</SelectItem>
+                    <SelectItem value="false">Unpaid</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
