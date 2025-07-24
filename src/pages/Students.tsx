@@ -3,6 +3,7 @@ import { Plus, Filter, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StudentTable } from "@/components/students/StudentTable";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -26,10 +27,17 @@ export default function Students() {
             Manage and view all student records
           </p>
         </div>
-        <Button className="bg-gradient-primary">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Student
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/students/all">View All Students</Link>
+          </Button>
+          <Button className="bg-gradient-primary" asChild>
+            <Link to="/students/add">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Student
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card>

@@ -128,7 +128,7 @@ export function StudentTable({ searchTerm = "", filterProgram = "", filterYear =
                 <TableCell>{student.program}</TableCell>
                 <TableCell>{student.year}</TableCell>
                 <TableCell>{student.semester}</TableCell>
-                <TableCell>${student.feeAmount}</TableCell>
+                <TableCell>₵{student.feeAmount}</TableCell>
                 <TableCell>{getPaymentBadge(student.feePaid)}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>

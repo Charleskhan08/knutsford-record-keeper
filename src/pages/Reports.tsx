@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Download, FileText, BarChart3, TrendingUp, CreditCard, Users, DollarSign } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { studentService } from "@/lib/studentService";
+import { generatePaymentReportPDF, generateStudentsPDF } from "@/lib/pdfGenerator";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -22,9 +24,35 @@ import {
 } from "@/components/ui/table";
 
 export default function Reports() {
+  const navigate = useNavigate();
   const [selectedSemester, setSelectedSemester] = useState<string>("all");
   const paymentReport = studentService.getPaymentReport(selectedSemester === "all" ? undefined : selectedSemester);
   const allStudents = studentService.getStudents();
+
+  const handleGenerateReport = () => {
+    const title = selectedSemester === "all" 
+      ? "Complete Payment Report" 
+      : `Payment Report - ${selectedSemester}`;
+    generatePaymentReportPDF(paymentReport, title);
+  };
+
+  const handleDownloadPaidReport = () => {
+    const title = selectedSemester === "all" 
+      ? "Paid Fees Report" 
+      : `Paid Fees Report - ${selectedSemester}`;
+    generateStudentsPDF(paymentReport.paid, title);
+  };
+
+  const handleDownloadUnpaidReport = () => {
+    const title = selectedSemester === "all" 
+      ? "Outstanding Fees Report" 
+      : `Outstanding Fees Report - ${selectedSemester}`;
+    generateStudentsPDF(paymentReport.unpaid, title);
+  };
+
+  const handleViewAllStudents = () => {
+    navigate('/students/all');
+  };
 
   return (
     <div className="flex-1 space-y-6 p-6">
@@ -35,7 +63,7 @@ export default function Reports() {
             View comprehensive reports and analytics for student data and fee payments
           </p>
         </div>
-        <Button className="bg-gradient-primary">
+        <Button className="bg-gradient-primary" onClick={handleGenerateReport}>
           <FileText className="mr-2 h-4 w-4" />
           Generate Report
         </Button>
@@ -80,8 +108,8 @@ export default function Reports() {
         />
         <StatsCard
           title="Total Revenue"
-          value={`$${paymentReport.paidAmount.toLocaleString()}`}
-          description={`of $${paymentReport.totalAmount.toLocaleString()} expected`}
+          value={`₵${paymentReport.paidAmount.toLocaleString()}`}
+          description={`of ₵${paymentReport.totalAmount.toLocaleString()} expected`}
           icon={<DollarSign className="h-4 w-4" />}
         />
       </div>
@@ -123,7 +151,7 @@ export default function Reports() {
                           {student.firstName} {student.lastName}
                         </TableCell>
                         <TableCell>{student.studentId}</TableCell>
-                        <TableCell>${student.feeAmount}</TableCell>
+                        <TableCell>₵{student.feeAmount}</TableCell>
                         <TableCell>
                           {student.paymentDate ? new Date(student.paymentDate).toLocaleDateString() : "N/A"}
                         </TableCell>
@@ -133,7 +161,7 @@ export default function Reports() {
                 </TableBody>
               </Table>
             </div>
-            <Button variant="outline" className="w-full mt-4">
+            <Button variant="outline" className="w-full mt-4" onClick={handleDownloadPaidReport}>
               <Download className="mr-2 h-4 w-4" />
               Download Paid Fees Report
             </Button>
@@ -175,7 +203,7 @@ export default function Reports() {
                           {student.firstName} {student.lastName}
                         </TableCell>
                         <TableCell>{student.studentId}</TableCell>
-                        <TableCell>${student.feeAmount}</TableCell>
+                        <TableCell>₵{student.feeAmount}</TableCell>
                         <TableCell>
                           <Badge variant="destructive">Unpaid</Badge>
                         </TableCell>
@@ -185,7 +213,7 @@ export default function Reports() {
                 </TableBody>
               </Table>
             </div>
-            <Button variant="outline" className="w-full mt-4">
+            <Button variant="outline" className="w-full mt-4" onClick={handleDownloadUnpaidReport}>
               <Download className="mr-2 h-4 w-4" />
               Download Outstanding Fees Report
             </Button>
@@ -204,30 +232,35 @@ export default function Reports() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div className="border rounded-lg p-4">
-              <h4 className="font-medium mb-2">Monthly Summary</h4>
+              <h4 className="font-medium mb-2">All Students Report</h4>
               <p className="text-sm text-muted-foreground mb-3">
-                Comprehensive overview of all student activities
+                Complete list of all registered students
               </p>
-              <Button size="sm" variant="outline" className="w-full">
-                Generate
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={handleViewAllStudents}>
+                  View All
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => generateStudentsPDF(allStudents)}>
+                  Generate PDF
+                </Button>
+              </div>
+            </div>
+            <div className="border rounded-lg p-4">
+              <h4 className="font-medium mb-2">Payment Summary</h4>
+              <p className="text-sm text-muted-foreground mb-3">
+                Overview of fee payments and outstanding balances
+              </p>
+              <Button size="sm" variant="outline" className="w-full" onClick={handleGenerateReport}>
+                Generate PDF
               </Button>
             </div>
             <div className="border rounded-lg p-4">
-              <h4 className="font-medium mb-2">Program Analysis</h4>
+              <h4 className="font-medium mb-2">Student Analytics</h4>
               <p className="text-sm text-muted-foreground mb-3">
-                Detailed breakdown by academic programs
+                Detailed analytics and insights about student data
               </p>
-              <Button size="sm" variant="outline" className="w-full">
-                Generate
-              </Button>
-            </div>
-            <div className="border rounded-lg p-4">
-              <h4 className="font-medium mb-2">Engagement Report</h4>
-              <p className="text-sm text-muted-foreground mb-3">
-                Student participation and interaction metrics
-              </p>
-              <Button size="sm" variant="outline" className="w-full">
-                Generate
+              <Button size="sm" variant="outline" className="w-full" onClick={() => generateStudentsPDF(allStudents, 'Student Analytics Report')}>
+                Generate PDF
               </Button>
             </div>
           </div>
