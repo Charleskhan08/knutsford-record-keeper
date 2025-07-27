@@ -1,8 +1,10 @@
+
 import { Users, UserPlus, FileText, TrendingUp } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { studentService } from "@/lib/studentService";
+import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { useState, useEffect } from "react";
 
 export default function Dashboard() {
@@ -18,6 +20,8 @@ export default function Dashboard() {
       engagement: 0
     }
   });
+
+  const recentActivities = useRecentActivity();
 
   useEffect(() => {
     const calculateDashboardData = () => {
@@ -68,6 +72,27 @@ export default function Dashboard() {
     
     return () => clearInterval(interval);
   }, []);
+
+  const getTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const activityTime = new Date(timestamp);
+    const diffInHours = Math.floor((now.getTime() - activityTime.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  };
+
+  const getActivityColor = (type: string) => {
+    switch (type) {
+      case 'student_added': return 'bg-green-500';
+      case 'fee_paid': return 'bg-blue-500';
+      case 'student_updated': return 'bg-yellow-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
   return (
     <div className="flex-1 space-y-6 p-6">
       <div>
@@ -154,38 +179,30 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>
-              Latest updates in the system
+              Latest updates from actual student data
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="h-2 w-2 rounded-full bg-primary"></div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">
-                    New student registered: Alice Johnson
-                  </p>
-                  <p className="text-xs text-muted-foreground">2 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="h-2 w-2 rounded-full bg-secondary"></div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">
-                    Report generated: Monthly engagement
-                  </p>
-                  <p className="text-xs text-muted-foreground">5 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="h-2 w-2 rounded-full bg-accent"></div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">
-                    Student record updated: Bob Smith
-                  </p>
-                  <p className="text-xs text-muted-foreground">1 day ago</p>
-                </div>
-              </div>
+              {recentActivities.length > 0 ? (
+                recentActivities.map((activity) => (
+                  <div key={activity.id} className="flex items-center space-x-4">
+                    <div className={`h-2 w-2 rounded-full ${getActivityColor(activity.type)}`}></div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">
+                        {activity.message}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {getTimeAgo(activity.timestamp)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No recent activity. Add students to see updates here.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
