@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { GlobalSearch } from "@/components/search/GlobalSearch";
 
 export function Header() {
   return (
@@ -19,13 +20,7 @@ export function Header() {
         <SidebarTrigger className="h-9 w-9" />
         
         <div className="flex-1 flex items-center gap-4">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search students..."
-              className="pl-10 w-full"
-            />
-          </div>
+          <GlobalSearch className="max-w-md" />
         </div>
 
         <div className="flex items-center gap-2">
