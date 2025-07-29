@@ -12,6 +12,7 @@ export interface Student {
   notes: string;
   feePaid: boolean;
   feeAmount: number;
+  currency: 'USD' | 'GBP' | 'GHC';
   paymentDate?: string;
   semester: string;
   createdAt: string;
@@ -31,6 +32,7 @@ export interface StudentFormData {
   notes: string;
   feePaid: boolean;
   feeAmount: number;
+  currency: 'USD' | 'GBP' | 'GHC';
   semester: string;
 }
 
@@ -41,10 +43,69 @@ class StudentService {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
 
+  private initializeWithSampleData(): void {
+    const existingStudents = this.getStudents();
+    if (existingStudents.length === 0) {
+      const sampleStudents = this.generateSampleStudents();
+      this.saveStudents(sampleStudents);
+    }
+  }
+
+  private generateSampleStudents(): Student[] {
+    const programs = ['computer-science', 'business', 'engineering', 'psychology', 'mathematics', 'english'];
+    const years = ['1', '2', '3', '4'];
+    const semesters = ['2024-1', '2024-2', '2025-1'];
+    const currencies: ('USD' | 'GBP' | 'GHC')[] = ['USD', 'GBP', 'GHC'];
+    const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'James', 'Jessica', 'Robert', 'Ashley', 'William', 'Amanda', 'Christopher', 'Jennifer', 'Matthew', 'Lisa', 'Andrew', 'Michelle', 'Joshua', 'Kimberly', 'Daniel', 'Donna', 'Anthony', 'Carol', 'Mark', 'Sandra', 'Steven', 'Ruth', 'Kenneth', 'Maria'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson'];
+
+    const sampleStudents: Student[] = [];
+    const now = new Date().toISOString();
+
+    for (let i = 0; i < 30; i++) {
+      const firstName = firstNames[i % firstNames.length];
+      const lastName = lastNames[i % lastNames.length];
+      const program = programs[Math.floor(Math.random() * programs.length)];
+      const year = years[Math.floor(Math.random() * years.length)];
+      const semester = semesters[Math.floor(Math.random() * semesters.length)];
+      const currency = currencies[Math.floor(Math.random() * currencies.length)];
+      const feePaid = Math.random() > 0.4;
+      const feeAmount = Math.floor(Math.random() * 2000) + 500;
+
+      sampleStudents.push({
+        id: this.generateId(),
+        firstName,
+        lastName,
+        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@university.edu`,
+        phone: `+233${Math.floor(Math.random() * 900000000) + 100000000}`,
+        studentId: `${20240000 + i + 1}`,
+        program,
+        year,
+        address: `${Math.floor(Math.random() * 999) + 1} University Street, Campus City`,
+        emergencyContact: `Emergency Contact ${i + 1} - +233${Math.floor(Math.random() * 900000000) + 100000000}`,
+        notes: i % 5 === 0 ? `Special notes for ${firstName} ${lastName}` : '',
+        feePaid,
+        feeAmount,
+        currency,
+        paymentDate: feePaid ? now : undefined,
+        semester,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    return sampleStudents;
+  }
+
   getStudents(): Student[] {
     try {
       const data = localStorage.getItem(this.storageKey);
-      return data ? JSON.parse(data) : [];
+      const students = data ? JSON.parse(data) : [];
+      if (students.length === 0) {
+        this.initializeWithSampleData();
+        return this.getStudents();
+      }
+      return students;
     } catch (error) {
       console.error('Error loading students:', error);
       return [];

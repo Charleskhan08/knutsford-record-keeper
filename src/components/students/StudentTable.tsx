@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { MoreHorizontal, CreditCard, CheckCircle, XCircle } from "lucide-react";
+import { MoreHorizontal, CreditCard, CheckCircle, XCircle, Eye, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,6 +20,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { studentService, Student } from "@/lib/studentService";
 import { useToast } from "@/hooks/use-toast";
+import { ViewStudentDialog } from "./ViewStudentDialog";
+import { EditStudentDialog } from "./EditStudentDialog";
 
 interface StudentTableProps {
   searchTerm?: string;
@@ -29,6 +31,9 @@ interface StudentTableProps {
 
 export function StudentTable({ searchTerm = "", filterProgram = "", filterYear = "" }: StudentTableProps) {
   const [allStudents, setAllStudents] = useState<Student[]>(() => studentService.getStudents());
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
   // Refresh students data when component mounts or when external changes occur
@@ -55,6 +60,20 @@ export function StudentTable({ searchTerm = "", filterProgram = "", filterYear =
     });
   }, [allStudents, searchTerm, filterProgram, filterYear]);
 
+  const handleViewStudent = (student: Student) => {
+    setSelectedStudent(student);
+    setViewDialogOpen(true);
+  };
+
+  const handleEditStudent = (student: Student) => {
+    setSelectedStudent(student);
+    setEditDialogOpen(true);
+  };
+
+  const handleStudentUpdated = () => {
+    setAllStudents(studentService.getStudents());
+  };
+
   const handleMarkAsPaid = (studentId: string) => {
     const success = studentService.markFeeAsPaid(studentId);
     if (success) {
@@ -74,6 +93,15 @@ export function StudentTable({ searchTerm = "", filterProgram = "", filterYear =
         title: "Student Deleted",
         description: "Student record has been successfully deleted.",
       });
+    }
+  };
+
+  const getCurrencySymbol = (currency: string) => {
+    switch (currency) {
+      case 'USD': return '$';
+      case 'GBP': return '£';
+      case 'GHC': return '₵';
+      default: return '₵';
     }
   };
 
@@ -128,7 +156,7 @@ export function StudentTable({ searchTerm = "", filterProgram = "", filterYear =
                 <TableCell>{student.program}</TableCell>
                 <TableCell>{student.year}</TableCell>
                 <TableCell>{student.semester}</TableCell>
-                <TableCell>₵{student.feeAmount}</TableCell>
+                <TableCell>{getCurrencySymbol(student.currency)}{student.feeAmount}</TableCell>
                 <TableCell>{getPaymentBadge(student.feePaid)}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
@@ -140,8 +168,14 @@ export function StudentTable({ searchTerm = "", filterProgram = "", filterYear =
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit Student</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleViewStudent(student)}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEditStudent(student)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit Student
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       {!student.feePaid && (
                         <DropdownMenuItem onClick={() => handleMarkAsPaid(student.id)}>
@@ -163,6 +197,19 @@ export function StudentTable({ searchTerm = "", filterProgram = "", filterYear =
           )}
         </TableBody>
       </Table>
+      
+      <ViewStudentDialog
+        student={selectedStudent}
+        open={viewDialogOpen}
+        onOpenChange={setViewDialogOpen}
+      />
+      
+      <EditStudentDialog
+        student={selectedStudent}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onStudentUpdated={handleStudentUpdated}
+      />
     </div>
   );
 }

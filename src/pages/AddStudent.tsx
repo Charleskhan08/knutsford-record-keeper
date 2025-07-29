@@ -62,6 +62,7 @@ export default function AddStudent() {
     notes: "",
     feePaid: false,
     feeAmount: 0,
+    currency: "GHC" as const,
     semester: "",
   });
 
@@ -339,7 +340,7 @@ export default function AddStudent() {
             </div>
 
             {/* Fee Information */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="semester">Semester *</Label>
                 <Select onValueChange={(value) => handleInputChange("semester", value)}>
@@ -371,6 +372,19 @@ export default function AddStudent() {
                 {errors.feeAmount && (
                   <p className="text-sm text-destructive">{errors.feeAmount}</p>
                 )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="currency">Currency</Label>
+                <Select onValueChange={(value) => handleInputChange("currency", value)} defaultValue="GHC">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">$ (USD)</SelectItem>
+                    <SelectItem value="GBP">£ (GBP)</SelectItem>
+                    <SelectItem value="GHC">₵ (GHC)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="feePaid">Payment Status</Label>

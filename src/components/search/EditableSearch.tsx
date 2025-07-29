@@ -176,6 +176,7 @@ export function EditableSearch({
       notes: editingStudent.notes,
       feePaid: editingStudent.feePaid,
       feeAmount: editForm.feeAmount || editingStudent.feeAmount,
+      currency: editingStudent.currency,
       semester: editingStudent.semester,
     });
 
