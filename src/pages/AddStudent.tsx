@@ -16,6 +16,36 @@ import { useNavigate } from "react-router-dom";
 import { studentService } from "@/lib/studentService";
 import { useToast } from "@/hooks/use-toast";
 
+// Validation functions
+const validateName = (name: string): string | null => {
+  if (!name.trim()) return "This field is required";
+  if (!/^[a-zA-Z\s]+$/.test(name)) return "Name should only contain alphabets and spaces";
+  return null;
+};
+
+const validateEmail = (email: string): string | null => {
+  if (!email.trim()) return "Email is required";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Please enter a valid email address";
+  return null;
+};
+
+const validatePhone = (phone: string): string | null => {
+  if (!phone.trim()) return null; // Phone is optional
+  if (!/^[0-9\s\-\+\(\)]+$/.test(phone)) return "Phone number should only contain numbers, spaces, +, -, (, )";
+  return null;
+};
+
+const validateStudentId = (studentId: string): string | null => {
+  if (!studentId.trim()) return "Student ID is required";
+  if (!/^[0-9]+$/.test(studentId)) return "Student ID should only contain numbers (0-9)";
+  return null;
+};
+
+const validateFeeAmount = (amount: number): string | null => {
+  if (amount < 0) return "Fee amount cannot be negative";
+  return null;
+};
+
 export default function AddStudent() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -35,15 +65,87 @@ export default function AddStudent() {
     semester: "",
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const handleInputChange = (field: string, value: string) => {
+    const processedValue = field === "feePaid" ? value === "true" : field === "feeAmount" ? Number(value) : value;
+    
     setFormData(prev => ({ 
       ...prev, 
-      [field]: field === "feePaid" ? value === "true" : field === "feeAmount" ? Number(value) : value 
+      [field]: processedValue
     }));
+
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: "" }));
+    }
+
+    // Real-time validation
+    let error: string | null = null;
+    switch (field) {
+      case "firstName":
+      case "lastName":
+        error = validateName(value);
+        break;
+      case "email":
+        error = validateEmail(value);
+        break;
+      case "phone":
+        error = validatePhone(value);
+        break;
+      case "studentId":
+        error = validateStudentId(value);
+        break;
+      case "feeAmount":
+        error = validateFeeAmount(Number(value));
+        break;
+    }
+
+    if (error) {
+      setErrors(prev => ({ ...prev, [field]: error }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate all fields before submission
+    const newErrors: Record<string, string> = {};
+    
+    const firstNameError = validateName(formData.firstName);
+    if (firstNameError) newErrors.firstName = firstNameError;
+    
+    const lastNameError = validateName(formData.lastName);
+    if (lastNameError) newErrors.lastName = lastNameError;
+    
+    const emailError = validateEmail(formData.email);
+    if (emailError) newErrors.email = emailError;
+    
+    const phoneError = validatePhone(formData.phone);
+    if (phoneError) newErrors.phone = phoneError;
+    
+    const studentIdError = validateStudentId(formData.studentId);
+    if (studentIdError) newErrors.studentId = studentIdError;
+    
+    const feeAmountError = validateFeeAmount(formData.feeAmount);
+    if (feeAmountError) newErrors.feeAmount = feeAmountError;
+
+    // Check required fields
+    if (!formData.program) newErrors.program = "Program is required";
+    if (!formData.year) newErrors.year = "Academic year is required";
+    if (!formData.semester) newErrors.semester = "Semester is required";
+
+    setErrors(newErrors);
+
+    // If there are errors, don't submit
+    if (Object.keys(newErrors).length > 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in the form before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       const newStudent = studentService.addStudent(formData);
@@ -99,8 +201,12 @@ export default function AddStudent() {
                   id="firstName"
                   value={formData.firstName}
                   onChange={(e) => handleInputChange("firstName", e.target.value)}
+                  className={errors.firstName ? "border-destructive" : ""}
                   required
                 />
+                {errors.firstName && (
+                  <p className="text-sm text-destructive">{errors.firstName}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name *</Label>
@@ -108,8 +214,12 @@ export default function AddStudent() {
                   id="lastName"
                   value={formData.lastName}
                   onChange={(e) => handleInputChange("lastName", e.target.value)}
+                  className={errors.lastName ? "border-destructive" : ""}
                   required
                 />
+                {errors.lastName && (
+                  <p className="text-sm text-destructive">{errors.lastName}</p>
+                )}
               </div>
             </div>
 
@@ -122,8 +232,12 @@ export default function AddStudent() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
+                  className={errors.email ? "border-destructive" : ""}
                   required
                 />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
@@ -131,7 +245,11 @@ export default function AddStudent() {
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
+                  className={errors.phone ? "border-destructive" : ""}
                 />
+                {errors.phone && (
+                  <p className="text-sm text-destructive">{errors.phone}</p>
+                )}
               </div>
             </div>
 
@@ -143,13 +261,17 @@ export default function AddStudent() {
                   id="studentId"
                   value={formData.studentId}
                   onChange={(e) => handleInputChange("studentId", e.target.value)}
+                  className={errors.studentId ? "border-destructive" : ""}
                   required
                 />
+                {errors.studentId && (
+                  <p className="text-sm text-destructive">{errors.studentId}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="program">Program *</Label>
                 <Select onValueChange={(value) => handleInputChange("program", value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.program ? "border-destructive" : ""}>
                     <SelectValue placeholder="Select program" />
                   </SelectTrigger>
                   <SelectContent>
@@ -161,11 +283,14 @@ export default function AddStudent() {
                     <SelectItem value="english">English Literature</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.program && (
+                  <p className="text-sm text-destructive">{errors.program}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="year">Academic Year *</Label>
                 <Select onValueChange={(value) => handleInputChange("year", value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.year ? "border-destructive" : ""}>
                     <SelectValue placeholder="Select year" />
                   </SelectTrigger>
                   <SelectContent>
@@ -175,6 +300,9 @@ export default function AddStudent() {
                     <SelectItem value="4">4th Year</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.year && (
+                  <p className="text-sm text-destructive">{errors.year}</p>
+                )}
               </div>
             </div>
 
@@ -215,7 +343,7 @@ export default function AddStudent() {
               <div className="space-y-2">
                 <Label htmlFor="semester">Semester *</Label>
                 <Select onValueChange={(value) => handleInputChange("semester", value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.semester ? "border-destructive" : ""}>
                     <SelectValue placeholder="Select semester" />
                   </SelectTrigger>
                   <SelectContent>
@@ -225,6 +353,9 @@ export default function AddStudent() {
                     <SelectItem value="2025-2">2025 - Second Semester</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.semester && (
+                  <p className="text-sm text-destructive">{errors.semester}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="feeAmount">Fee Amount *</Label>
@@ -233,9 +364,13 @@ export default function AddStudent() {
                   type="number"
                   value={formData.feeAmount}
                   onChange={(e) => handleInputChange("feeAmount", e.target.value)}
+                  className={errors.feeAmount ? "border-destructive" : ""}
                   placeholder="0.00"
                   required
                 />
+                {errors.feeAmount && (
+                  <p className="text-sm text-destructive">{errors.feeAmount}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="feePaid">Payment Status</Label>

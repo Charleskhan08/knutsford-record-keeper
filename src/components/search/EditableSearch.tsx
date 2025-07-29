@@ -8,6 +8,25 @@ import { Badge } from "@/components/ui/badge";
 import { studentService, Student } from "@/lib/studentService";
 import { useToast } from "@/hooks/use-toast";
 
+// Validation functions
+const validateName = (name: string): string | null => {
+  if (!name.trim()) return "This field is required";
+  if (!/^[a-zA-Z\s]+$/.test(name)) return "Name should only contain alphabets and spaces";
+  return null;
+};
+
+const validateEmail = (email: string): string | null => {
+  if (!email.trim()) return "Email is required";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Please enter a valid email address";
+  return null;
+};
+
+const validatePhone = (phone: string): string | null => {
+  if (!phone.trim()) return null; // Phone is optional
+  if (!/^[0-9\s\-\+\(\)]+$/.test(phone)) return "Phone number should only contain numbers, spaces, +, -, (, )";
+  return null;
+};
+
 interface EditableSearchProps {
   placeholder?: string;
   className?: string;
@@ -24,6 +43,7 @@ export function EditableSearch({
   const [isOpen, setIsOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [editForm, setEditForm] = useState<Partial<Student>>({});
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
   const searchRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -69,10 +89,79 @@ export function EditableSearch({
       year: student.year,
       feeAmount: student.feeAmount,
     });
+    setEditErrors({});
+  };
+
+  const handleEditInputChange = (field: string, value: string) => {
+    const processedValue = field === "feeAmount" ? Number(value) : value;
+    
+    setEditForm(prev => ({ 
+      ...prev, 
+      [field]: processedValue
+    }));
+
+    // Clear error when user starts typing
+    if (editErrors[field]) {
+      setEditErrors(prev => ({ ...prev, [field]: "" }));
+    }
+
+    // Real-time validation
+    let error: string | null = null;
+    switch (field) {
+      case "firstName":
+      case "lastName":
+        error = validateName(value);
+        break;
+      case "email":
+        error = validateEmail(value);
+        break;
+      case "phone":
+        error = validatePhone(value);
+        break;
+    }
+
+    if (error) {
+      setEditErrors(prev => ({ ...prev, [field]: error }));
+    }
   };
 
   const handleSaveEdit = () => {
     if (!editingStudent) return;
+
+    // Validate all fields before saving
+    const newErrors: Record<string, string> = {};
+    
+    if (editForm.firstName) {
+      const firstNameError = validateName(editForm.firstName);
+      if (firstNameError) newErrors.firstName = firstNameError;
+    }
+    
+    if (editForm.lastName) {
+      const lastNameError = validateName(editForm.lastName);
+      if (lastNameError) newErrors.lastName = lastNameError;
+    }
+    
+    if (editForm.email) {
+      const emailError = validateEmail(editForm.email);
+      if (emailError) newErrors.email = emailError;
+    }
+    
+    if (editForm.phone) {
+      const phoneError = validatePhone(editForm.phone);
+      if (phoneError) newErrors.phone = phoneError;
+    }
+
+    setEditErrors(newErrors);
+
+    // If there are errors, don't save
+    if (Object.keys(newErrors).length > 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const updatedStudent = studentService.updateStudent(editingStudent.id, {
       firstName: editForm.firstName || editingStudent.firstName,
@@ -97,6 +186,7 @@ export function EditableSearch({
       });
       setEditingStudent(null);
       setEditForm({});
+      setEditErrors({});
       onStudentUpdated?.();
       // Refresh search results
       setSearchResults(prev => 
@@ -110,6 +200,7 @@ export function EditableSearch({
   const handleCancelEdit = () => {
     setEditingStudent(null);
     setEditForm({});
+    setEditErrors({});
   };
 
   return (
@@ -134,32 +225,52 @@ export function EditableSearch({
                   {editingStudent?.id === student.id ? (
                     <div className="p-4 space-y-3">
                       <div className="grid grid-cols-2 gap-3">
-                        <Input
-                          placeholder="First Name"
-                          value={editForm.firstName || ''}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
-                          className="text-sm"
-                        />
-                        <Input
-                          placeholder="Last Name"
-                          value={editForm.lastName || ''}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
-                          className="text-sm"
-                        />
+                        <div className="space-y-1">
+                          <Input
+                            placeholder="First Name"
+                            value={editForm.firstName || ''}
+                            onChange={(e) => handleEditInputChange("firstName", e.target.value)}
+                            className={`text-sm ${editErrors.firstName ? "border-destructive" : ""}`}
+                          />
+                          {editErrors.firstName && (
+                            <p className="text-xs text-destructive">{editErrors.firstName}</p>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <Input
+                            placeholder="Last Name"
+                            value={editForm.lastName || ''}
+                            onChange={(e) => handleEditInputChange("lastName", e.target.value)}
+                            className={`text-sm ${editErrors.lastName ? "border-destructive" : ""}`}
+                          />
+                          {editErrors.lastName && (
+                            <p className="text-xs text-destructive">{editErrors.lastName}</p>
+                          )}
+                        </div>
                       </div>
-                      <Input
-                        placeholder="Email"
-                        value={editForm.email || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
-                        className="text-sm"
-                      />
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
                         <Input
-                          placeholder="Phone"
-                          value={editForm.phone || ''}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
-                          className="text-sm"
+                          placeholder="Email"
+                          value={editForm.email || ''}
+                          onChange={(e) => handleEditInputChange("email", e.target.value)}
+                          className={`text-sm ${editErrors.email ? "border-destructive" : ""}`}
                         />
+                        {editErrors.email && (
+                          <p className="text-xs text-destructive">{editErrors.email}</p>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Input
+                            placeholder="Phone"
+                            value={editForm.phone || ''}
+                            onChange={(e) => handleEditInputChange("phone", e.target.value)}
+                            className={`text-sm ${editErrors.phone ? "border-destructive" : ""}`}
+                          />
+                          {editErrors.phone && (
+                            <p className="text-xs text-destructive">{editErrors.phone}</p>
+                          )}
+                        </div>
                         <Input
                           placeholder="Program"
                           value={editForm.program || ''}
@@ -178,7 +289,7 @@ export function EditableSearch({
                           placeholder="Fee Amount"
                           type="number"
                           value={editForm.feeAmount || ''}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, feeAmount: Number(e.target.value) }))}
+                          onChange={(e) => handleEditInputChange("feeAmount", e.target.value)}
                           className="text-sm"
                         />
                       </div>
