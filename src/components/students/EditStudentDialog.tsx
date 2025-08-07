@@ -43,7 +43,7 @@ export function EditStudentDialog({ student, open, onOpenChange, onStudentUpdate
     notes: "",
     feePaid: false,
     feeAmount: 0,
-    currency: "GHC" as 'USD' | 'GBP' | 'GHC',
+    currency: "GHS" as 'GHS',
     semester: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -366,9 +366,7 @@ export function EditStudentDialog({ student, open, onOpenChange, onStudentUpdate
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USD">$ (USD)</SelectItem>
-                  <SelectItem value="GBP">£ (GBP)</SelectItem>
-                  <SelectItem value="GHC">₵ (GHC)</SelectItem>
+                  <SelectItem value="GHS">₵ (GHS)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

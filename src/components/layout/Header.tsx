@@ -1,11 +1,24 @@
 
-import { Bell, Settings, Menu } from "lucide-react";
+import { Bell, Settings, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditableSearch } from "@/components/search/EditableSearch";
 import { useSidebar } from "@/components/ui/sidebar";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 export function Header() {
   const { toggleSidebar } = useSidebar();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userRole");
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
+    navigate("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -36,6 +49,10 @@ export function Header() {
             <Button variant="ghost" size="icon">
               <Settings className="h-5 w-5" />
               <span className="sr-only">Settings</span>
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <LogOut className="h-5 w-5" />
+              <span className="sr-only">Logout</span>
             </Button>
           </div>
         </div>

@@ -62,7 +62,7 @@ export default function AddStudent() {
     notes: "",
     feePaid: false,
     feeAmount: 0,
-    currency: "GHC" as const,
+    currency: "GHS" as const,
     semester: "",
   });
 
@@ -375,14 +375,12 @@ export default function AddStudent() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="currency">Currency</Label>
-                <Select onValueChange={(value) => handleInputChange("currency", value)} defaultValue="GHC">
+                <Select onValueChange={(value) => handleInputChange("currency", value)} defaultValue="GHS">
                   <SelectTrigger>
                     <SelectValue placeholder="Select currency" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="USD">$ (USD)</SelectItem>
-                    <SelectItem value="GBP">£ (GBP)</SelectItem>
-                    <SelectItem value="GHC">₵ (GHC)</SelectItem>
+                    <SelectItem value="GHS">₵ (GHS)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

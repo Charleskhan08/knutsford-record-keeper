@@ -97,12 +97,7 @@ export function StudentTable({ searchTerm = "", filterProgram = "", filterYear =
   };
 
   const getCurrencySymbol = (currency: string) => {
-    switch (currency) {
-      case 'USD': return '$';
-      case 'GBP': return '£';
-      case 'GHC': return '₵';
-      default: return '₵';
-    }
+    return '₵'; // Always GHS currency
   };
 
   const getPaymentBadge = (isPaid: boolean) => {

@@ -12,7 +12,7 @@ export interface Student {
   notes: string;
   feePaid: boolean;
   feeAmount: number;
-  currency: 'USD' | 'GBP' | 'GHC';
+  currency: 'GHS';
   paymentDate?: string;
   semester: string;
   createdAt: string;
@@ -32,7 +32,7 @@ export interface StudentFormData {
   notes: string;
   feePaid: boolean;
   feeAmount: number;
-  currency: 'USD' | 'GBP' | 'GHC';
+  currency: 'GHS';
   semester: string;
 }
 
@@ -55,7 +55,7 @@ class StudentService {
     const programs = ['computer-science', 'business', 'engineering', 'psychology', 'mathematics', 'english'];
     const years = ['1', '2', '3', '4'];
     const semesters = ['2024-1', '2024-2', '2025-1'];
-    const currencies: ('USD' | 'GBP' | 'GHC')[] = ['USD', 'GBP', 'GHC'];
+    const currencies: ('GHS')[] = ['GHS'];
     const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'James', 'Jessica', 'Robert', 'Ashley', 'William', 'Amanda', 'Christopher', 'Jennifer', 'Matthew', 'Lisa', 'Andrew', 'Michelle', 'Joshua', 'Kimberly', 'Daniel', 'Donna', 'Anthony', 'Carol', 'Mark', 'Sandra', 'Steven', 'Ruth', 'Kenneth', 'Maria'];
     const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson'];
 
@@ -68,7 +68,7 @@ class StudentService {
       const program = programs[Math.floor(Math.random() * programs.length)];
       const year = years[Math.floor(Math.random() * years.length)];
       const semester = semesters[Math.floor(Math.random() * semesters.length)];
-      const currency = currencies[Math.floor(Math.random() * currencies.length)];
+      const currency = 'GHS';
       const feePaid = Math.random() > 0.4;
       const feeAmount = Math.floor(Math.random() * 2000) + 500;
 

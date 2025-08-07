@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, FileText, BarChart3, TrendingUp, CreditCard, Users, DollarSign } from "lucide-react";
@@ -7,13 +7,7 @@ import { studentService } from "@/lib/studentService";
 import { generatePaymentReportPDF, generateStudentsPDF } from "@/lib/pdfGenerator";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { PeriodFilter } from "@/components/reports/PeriodFilter";
 import {
   Table,
   TableBody,
@@ -26,13 +20,57 @@ import {
 export default function Reports() {
   const navigate = useNavigate();
   const [selectedSemester, setSelectedSemester] = useState<string>("all");
-  const paymentReport = studentService.getPaymentReport(selectedSemester === "all" ? undefined : selectedSemester);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  
   const allStudents = studentService.getStudents();
+  
+  // Filter students based on date range and semester
+  const filteredStudents = useMemo(() => {
+    let filtered = allStudents;
+    
+    // Filter by semester
+    if (selectedSemester !== "all") {
+      filtered = filtered.filter(student => student.semester === selectedSemester);
+    }
+    
+    // Filter by date range (using createdAt date)
+    if (startDate || endDate) {
+      filtered = filtered.filter(student => {
+        const studentDate = new Date(student.createdAt);
+        const start = startDate ? new Date(startDate) : null;
+        const end = endDate ? new Date(endDate) : null;
+        
+        if (start && studentDate < start) return false;
+        if (end && studentDate > end) return false;
+        return true;
+      });
+    }
+    
+    return filtered;
+  }, [allStudents, selectedSemester, startDate, endDate]);
+  
+  const paymentReport = useMemo(() => {
+    const paid = filteredStudents.filter(student => student.feePaid);
+    const unpaid = filteredStudents.filter(student => !student.feePaid);
+    const totalAmount = filteredStudents.reduce((sum, student) => sum + student.feeAmount, 0);
+    const paidAmount = paid.reduce((sum, student) => sum + student.feeAmount, 0);
+    
+    return { paid, unpaid, totalAmount, paidAmount };
+  }, [filteredStudents]);
+
+  const handleFilterChange = (newStartDate: string, newEndDate: string, newSemester: string) => {
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
+    setSelectedSemester(newSemester);
+  };
 
   const handleGenerateReport = () => {
-    const title = selectedSemester === "all" 
-      ? "Complete Payment Report" 
-      : `Payment Report - ${selectedSemester}`;
+    let title = "Payment Report";
+    if (selectedSemester !== "all") title += ` - ${selectedSemester}`;
+    if (startDate || endDate) {
+      title += ` (${startDate || 'Start'} to ${endDate || 'End'})`;
+    }
     generatePaymentReportPDF(paymentReport, title);
   };
 
@@ -69,22 +107,11 @@ export default function Reports() {
         </Button>
       </div>
 
-      {/* Semester Filter */}
-      <div className="flex items-center gap-4">
-        <label className="text-sm font-medium">Filter by Semester:</label>
-        <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Select semester" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Semesters</SelectItem>
-            <SelectItem value="2024-1">2024 - First Semester</SelectItem>
-            <SelectItem value="2024-2">2024 - Second Semester</SelectItem>
-            <SelectItem value="2025-1">2025 - First Semester</SelectItem>
-            <SelectItem value="2025-2">2025 - Second Semester</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Period Filter */}
+      <PeriodFilter 
+        onFilterChange={handleFilterChange}
+        onGenerateReport={handleGenerateReport}
+      />
 
       {/* Payment Summary Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
