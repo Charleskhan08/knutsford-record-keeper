@@ -47,7 +47,7 @@ export default function Auth() {
           description: "Welcome to SRC Student Management System",
         });
         
-        navigate("/");
+        navigate("/dashboard");
       } else {
         toast({
           title: "Login Failed",

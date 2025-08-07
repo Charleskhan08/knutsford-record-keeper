@@ -31,7 +31,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 const navigationItems = [
   {
     title: "Dashboard",
-    url: "/",
+    url: "/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -68,7 +68,8 @@ export function AppSidebar() {
 
   const getNavClasses = (path: string) => {
     const baseClasses = "w-full justify-start transition-smooth";
-    return isActive(path)
+    const pathToCheck = path === "/dashboard" ? "/" : path;
+    return isActive(pathToCheck) || (path === "/dashboard" && currentPath === "/")
       ? `${baseClasses} bg-primary text-primary-foreground hover:bg-primary/90`
       : `${baseClasses} hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`;
   };

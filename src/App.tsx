@@ -42,6 +42,11 @@ const AppContent = () => {
           <Header />
           <main className="flex-1">
             <Routes>
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
               <Route path="/" element={
                 <ProtectedRoute>
                   <Dashboard />
