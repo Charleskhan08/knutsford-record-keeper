@@ -44,42 +44,42 @@ const AppContent = () => {
           <main className="flex-1">
             <Routes>
               <Route path="/dashboard" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={["admin"]}>
                   <Dashboard />
                 </ProtectedRoute>
               } />
               <Route path="/" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={["admin"]}>
                   <Dashboard />
                 </ProtectedRoute>
               } />
               <Route path="/students" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={["admin"]}>
                   <Students />
                 </ProtectedRoute>
               } />
               <Route path="/students/add" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={["admin"]}>
                   <AddStudent />
                 </ProtectedRoute>
               } />
               <Route path="/students/all" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={["admin"]}>
                   <ViewAllStudents />
                 </ProtectedRoute>
               } />
               <Route path="/reports" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={["admin"]}>
                   <Reports />
                 </ProtectedRoute>
               } />
               <Route path="/settings" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={["admin"]}>
                   <Settings />
                 </ProtectedRoute>
               } />
               <Route path="/fee-payment" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={["admin", "student"]}>
                   <FeePayment />
                 </ProtectedRoute>
               } />

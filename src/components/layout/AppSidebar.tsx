@@ -66,6 +66,7 @@ export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
+  const userRole = localStorage.getItem("userRole") || "student";
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
@@ -110,7 +111,14 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems.map((item) => (
+              {navigationItems
+                .filter((item) => {
+                  if (userRole === "student") {
+                    return item.title === "Fee Payment";
+                  }
+                  return true; // Admin sees all items
+                })
+                .map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavClasses(item.url)}>
@@ -135,9 +143,11 @@ export function AppSidebar() {
           {state !== "collapsed" && (
             <div className="flex-1">
               <p className="text-sm font-medium text-sidebar-foreground">
-                John Doe
+                {userRole === "admin" ? "John Doe" : "Student User"}
               </p>
-              <p className="text-xs text-sidebar-foreground/70">SRC Admin</p>
+              <p className="text-xs text-sidebar-foreground/70">
+                {userRole === "admin" ? "SRC Admin" : "Student"}
+              </p>
             </div>
           )}
         </div>

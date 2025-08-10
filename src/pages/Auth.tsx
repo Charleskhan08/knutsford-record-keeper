@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, GraduationCap } from "lucide-react";
 import collegeBackground from "@/assets/knutsford-college-bg.jpg";
@@ -12,15 +13,22 @@ export default function Auth() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
-    password: ""
+    password: "",
+    role: "student"
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Hardcoded admin credentials
-  const ADMIN_CREDENTIALS = {
-    username: "admin",
-    password: "admin123"
+  // Hardcoded credentials
+  const CREDENTIALS = {
+    admin: {
+      username: "admin",
+      password: "admin123"
+    },
+    student: {
+      username: "student",
+      password: "student123"
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -36,19 +44,21 @@ export default function Auth() {
 
     // Simulate loading
     setTimeout(() => {
-      if (formData.username === ADMIN_CREDENTIALS.username && 
-          formData.password === ADMIN_CREDENTIALS.password) {
+      const credentials = CREDENTIALS[formData.role as keyof typeof CREDENTIALS];
+      
+      if (formData.username === credentials.username && 
+          formData.password === credentials.password) {
         
         // Store login state
         localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("userRole", "admin");
+        localStorage.setItem("userRole", formData.role);
         
         toast({
           title: "Login Successful",
-          description: "Welcome to SRC Student Management System",
+          description: `Welcome to SRC Student Management System`,
         });
         
-        navigate("/dashboard");
+        navigate(formData.role === "admin" ? "/dashboard" : "/fee-payment");
       } else {
         toast({
           title: "Login Failed",
@@ -75,13 +85,31 @@ export default function Auth() {
             <div className="flex justify-center mb-4">
               <GraduationCap className="h-12 w-12 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
+            <CardTitle className="text-2xl font-bold">Login</CardTitle>
             <CardDescription>
               Access the SRC Student Management System
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-3">
+                <Label>Login as</Label>
+                <RadioGroup
+                  value={formData.role}
+                  onValueChange={(value) => handleInputChange("role", value)}
+                  className="flex gap-6"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="student" id="student" />
+                    <Label htmlFor="student">Student</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="admin" id="admin" />
+                    <Label htmlFor="admin">Admin</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
                 <Input
@@ -133,8 +161,8 @@ export default function Auth() {
             <div className="mt-6 p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground text-center">
                 <strong>Demo Credentials:</strong><br />
-                Username: admin<br />
-                Password: admin123
+                Admin - Username: admin, Password: admin123<br />
+                Student - Username: student, Password: student123
               </p>
             </div>
           </CardContent>
