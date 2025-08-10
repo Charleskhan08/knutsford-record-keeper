@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap, Users, FileText, BarChart3, Shield, DollarSign } from "lucide-react";
+import collegeBackground from "@/assets/knutsford-college-bg.jpg";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -41,7 +42,14 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="bg-gradient-primary text-white">
+      <section 
+        className="relative text-white min-h-screen flex items-center"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${collegeBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
         <div className="container mx-auto px-6 py-20">
           <div className="text-center">
             <div className="flex justify-center mb-6">

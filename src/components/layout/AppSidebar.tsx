@@ -9,7 +9,8 @@ import {
   LogOut,
   GraduationCap,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  DollarSign
 } from "lucide-react";
 
 import {
@@ -48,6 +49,11 @@ const navigationItems = [
     title: "Reports",
     url: "/reports",
     icon: BarChart3,
+  },
+  {
+    title: "Fee Payment",
+    url: "/fee-payment",
+    icon: DollarSign,
   },
   {
     title: "Settings",

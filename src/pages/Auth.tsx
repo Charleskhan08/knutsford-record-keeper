@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, GraduationCap } from "lucide-react";
+import collegeBackground from "@/assets/knutsford-college-bg.jpg";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -60,7 +61,14 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-primary">
+    <div 
+      className="min-h-screen flex items-center justify-center"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${collegeBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
       <div className="w-full max-w-md p-6">
         <Card className="shadow-elevated">
           <CardHeader className="text-center">

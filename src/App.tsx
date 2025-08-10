@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import ViewAllStudents from "./pages/ViewAllStudents";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
+import FeePayment from "./pages/FeePayment";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,11 @@ const AppContent = () => {
               <Route path="/settings" element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              } />
+              <Route path="/fee-payment" element={
+                <ProtectedRoute>
+                  <FeePayment />
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />
